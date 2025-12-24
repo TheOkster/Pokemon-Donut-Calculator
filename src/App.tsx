@@ -22,13 +22,22 @@ function App() {
   ));
 
   const handleBerryQuantsChange = (berry: string, newValue: number) => {
-    setBerryQuants((prev) => ({ ...prev, [berry]: newValue }));
+    const newBerryQuants = { ...berryQuants, [berry]: newValue };
+    setBerryQuants(newBerryQuants);
+    localStorage.setItem("berryQuants", JSON.stringify(newBerryQuants));
+    // console.log(newBerryQuants);
   };
   const handleFlavorChange = (flavor: string, newValue: [number, number]) => {
     setFlavorValues((prev) => ({ ...prev, [flavor]: newValue }));
   };
 
   useEffect(() => {
+      const data = localStorage.getItem("berryQuants");
+      const quantsTemp: BerryQuantDict = data ? JSON.parse(data) as Record<string, number> : {};
+      if (data) {
+        setBerryQuants(JSON.parse(data) as Record<string, number>);
+      }
+      // console.log(data);
     fetch("/berries.csv")
       .then((res) => res.text())
       .then((csvText) => {
@@ -36,7 +45,7 @@ function App() {
         const [headerRow, ...rows] = parsed.data;
         const headers = headerRow.slice(1).map((header) => header.toLowerCase() );
         const result: BerryDict = {};
-        const quantsTemp: BerryQuantDict = {};
+        // const quantsTemp: BerryQuantDict = data;
 
         rows.forEach((row) => {
           const key = row[0];
@@ -45,12 +54,16 @@ function App() {
             values[header] = Number(row[index + 1]);
           });
           result[key] = values;
-          quantsTemp[key] = 0;
+          if(!(key in quantsTemp)){
+            quantsTemp[key] = 0;
+          }
         });
 
         setBerryStats(result);
         setBerryQuants(quantsTemp);
-      });  }, []);
+      });  
+    }, []);
+
 
 
 
@@ -90,7 +103,7 @@ function meetsThresholds(stats: FlavorStats, flavorValues: {[flavor: string]: [n
         return false;
       }
     } else{
-      console.log(`${key} is not in flavorValues`)
+      // console.log(`${key} is not in flavorValues`)
     }
   }
   return true;
@@ -100,17 +113,17 @@ function willNeverMeetThresholds(stats: FlavorStats, flavorValues: {[flavor: str
   for (const key in stats){
     if(key in flavorValues){
       if(stats[key] < (flavorValues[key][0] - 95 * berriesLeft) || stats[key] > flavorValues[key][1]){
-        console.log(`${stats[key]} will never reach ${flavorValues[key][0]} with ${berriesLeft}`);
+        // console.log(`${stats[key]} will never reach ${flavorValues[key][0]} with ${berriesLeft}`);
         return true;
       }
 
     } else if (key === "calories") {
       if(stats[key] < (starCalorieCounts[starRange[0]] - 400 * berriesLeft) || stats[key] > starCalorieCounts[starRange[1]+1]){
-        console.log(`${stats[key]} don't have enough calories`);
+        // console.log(`${stats[key]} don't have enough calories`);
         return true;
       }
     } else{
-      console.log(`${key} is not in flavorValues`)
+      // console.log(`${key} is not in flavorValues`)
     }
   }
   return false;
@@ -135,6 +148,33 @@ function findValidCombinations(): Combination[] {
       score += stats.calories / Math.max(1, starCalorieCounts[starRange[0]]);
       return score;
   }
+function insertMinimal(results: Combination[], combo: Combination): boolean {
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+
+    const rSubC = isSubset(r, combo);
+    const cSubR = isSubset(combo, r);
+
+    if (rSubC && !cSubR) {
+      // existing is strictly better
+      return false;
+    }
+
+    if (cSubR && !rSubC) {
+      // new combo dominates old
+      results.splice(i, 1);
+      i--;
+    }
+
+    if (rSubC && cSubR) {
+      // equal
+      return false;
+    }
+  }
+
+  results.push(combo);
+  return true;
+}
 
 const sortedBerries = Object.keys(berryQuants)
   .filter(b => berryQuants[b] > 0)
@@ -145,17 +185,15 @@ const sortedBerries = Object.keys(berryQuants)
     currentCombo: Combination,
     berriesSelected: number,
   ) {
-    console.log(currentCombo);
+    // console.log(currentCombo);
+    // for (const r of results) {
+    //   if (isSubset(r, currentCombo)) {
+    //       // console.log(`${currentCombo} is superseded`);
+    //     return;
+    //   }
+    // }
     if (berriesSelected > 0 && meetsThresholds(currentStats, flavorValues, starRange)) {
-      for (const r of results) {
-        if (isSubset(r, currentCombo)) {
-          console.log(`${currentCombo} is superseded`);
-          return;
-        }
-      }
-
-      // console.log(`${currentCombo} meets thresholds, i = ${i}`);
-      results.push({ ...currentCombo });
+      insertMinimal(results, { ...currentCombo });
       return;
     } else if (berriesSelected > 0 && willNeverMeetThresholds(currentStats, flavorValues, starRange, maxBerries - berriesSelected)){
       // console.log(`${currentCombo} will never meet thresholds`);
@@ -168,15 +206,33 @@ const sortedBerries = Object.keys(berryQuants)
 
     const berry = sortedBerries[i];
     // const maxCanPick = Math.min(berryQuants[berry], maxBerries-berriesSelected);
-    if (berriesSelected < maxBerries && (currentCombo[berry] ?? 0) < berryQuants[berry]) {
-      // console.log("here in theory");
-      backtrack(
+    let helps = false;
+    for (const flavor of flavors) {
+      if (
+        currentStats[flavor] < flavorValues[flavor][0] &&
+        berryStats[berry][flavor] > 0 || currentStats["calories"] < starCalorieCounts[starRange[0]] || berriesSelected === 0
+      ) {
+        helps = true;
+        break;
+      }
+    }
+
+  if (helps && berriesSelected < maxBerries && (currentCombo[berry] ?? 0) < berryQuants[berry]) {
+ backtrack(
         i,
         addStats(currentStats, berryStats[berry], 1),
         { ...currentCombo, [berry]: (currentCombo[berry] ?? 0) + 1 },
         berriesSelected + 1
-      );
-    }
+      );  }
+    // if (berriesSelected < maxBerries && (currentCombo[berry] ?? 0) < berryQuants[berry]) {
+    //   // console.log("here in theory");
+    //   backtrack(
+    //     i,
+    //     addStats(currentStats, berryStats[berry], 1),
+    //     { ...currentCombo, [berry]: (currentCombo[berry] ?? 0) + 1 },
+    //     berriesSelected + 1
+    //   );
+    // }
     backtrack(i + 1, currentStats, currentCombo, berriesSelected);
     // console.log(currentCombo[berry]);
 
