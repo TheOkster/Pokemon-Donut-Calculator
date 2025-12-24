@@ -1,3 +1,16 @@
+export const flavors = ["sweet", "spicy", "sour", "bitter", "fresh"] as const;
+export type Flavor = (typeof flavors)[number];
+export type Combination = Readonly<{
+  [berry: string]: number;
+}>;
+export type FlavorStats = {
+  [flavor: string]: number;
+}
+
+
+
+
+
 export function setCookie(name: string, val: string, days: number) {
     const date = new Date();
     const value = val;
