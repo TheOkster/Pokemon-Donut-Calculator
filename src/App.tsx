@@ -121,7 +121,24 @@ function findValidCombinations(): Combination[] {
   const results: Combination[] = [];
   const baseStats: FlavorStats = Object.fromEntries(flavors.map((flavor) =>[flavor, 0]));
   baseStats["calories"] = 0;
-  const sortedBerries = Object.keys(berryQuants).sort();
+  function berryUtility(berry: string): number {
+      const stats = berryStats[berry];
+      let score = 0;
+
+      for (const flavor of flavors) {
+        const [min, max] = flavorValues[flavor];
+        if (stats[flavor] > 0) {
+          score += stats[flavor] / Math.max(1, min);
+        }
+      }
+
+      score += stats.calories / Math.max(1, starCalorieCounts[starRange[0]]);
+      return score;
+  }
+
+const sortedBerries = Object.keys(berryQuants)
+  .filter(b => berryQuants[b] > 0)
+  .sort((a, b) => berryUtility(b) - berryUtility(a));
   function backtrack(
     i: number,
     currentStats: FlavorStats,
