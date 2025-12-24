@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Slider, Stack, TextField } from '@mui/material'
+import { Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Slider, Stack, TextField } from '@mui/material'
 import RangeSelector from './RangeSelector'
+import { flavors, type Flavor } from './App';
   export interface BerryDict {
     [key: string]: Record<string, number>;
   }
@@ -17,17 +18,19 @@ import RangeSelector from './RangeSelector'
    maxBerries: number;
    berryQuants: BerryQuantDict;
    berryStats: BerryDict;
+   enableRainbow: boolean;
+   rainbowFlavors: [Flavor, Flavor],
    onStarRangeChange?: (starRange: [number, number]) => void;
    onFlavorValuesChange?: (flavor: string, newValue: [number, number]) => void;
    onBerryQuantsChange?: (berry: string, newQuant: number) => void;
    onMaxBerriesChange?: (maxBerries: number) => void;
+   onRainbowChange?: (rainbowEnabled: boolean) => void;
+   onRainbowFlavorChange?: (rainbowFlavors: [Flavor, Flavor]) => void;
   }
-export default function Settings({starRange, maxBerries, berryQuants, berryStats, onStarRangeChange, onFlavorValuesChange, onBerryQuantsChange, onMaxBerriesChange}: BerryProps){
+export default function Settings({starRange, maxBerries, berryQuants, berryStats, enableRainbow, rainbowFlavors, onStarRangeChange, onFlavorValuesChange, onBerryQuantsChange, onMaxBerriesChange, onRainbowChange, onRainbowFlavorChange}: BerryProps){
 //   const [starValue, setStarValue] = useState<[number, number]>([1, 5])
   const minVal = 0;
   const maxVal = 760;
-    const flavors = ["sweet", "spicy", "fresh", "bitter", "sour"] as const;
-
   
   const [flavorValues, setFlavorValues] = useState<{
     [key: string]: [number, number];
@@ -98,6 +101,44 @@ export default function Settings({starRange, maxBerries, berryQuants, berryStats
         min={1}
         max={8}
       />
+         <FormControlLabel
+         control={<Checkbox checked={enableRainbow} onChange={(e) => onRainbowChange?.(Boolean(e.target.checked))} />}
+         label="Rainbow"
+         labelPlacement="start"
+         />
+
+         <Stack direction="row" spacing={2} alignItems="center" padding="0.5">
+            <FormControl fullWidth>
+               <InputLabel>Flavor A</InputLabel>
+               <Select
+                  value={rainbowFlavors[0]}
+                  label="Rainbow Flavor A"
+                  onChange={(e) => onRainbowFlavorChange?.([e.target.value, rainbowFlavors[1]])}
+               >
+                 {flavors.map((flavor) => (
+                  <MenuItem key={flavor} value={flavor}>
+                     {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
+                  </MenuItem>
+                  ))}
+               </Select>
+            </FormControl>
+               <FormControl fullWidth>
+               <InputLabel>Flavor B</InputLabel>
+               <Select
+                  value={rainbowFlavors[1]}
+                  label="Rainbow Flavor B"
+                  onChange={(e) => onRainbowFlavorChange?.([rainbowFlavors[0], e.target.value])}
+               >
+                  {flavors.map((flavor) => (
+                  <MenuItem key={flavor} value={flavor}>
+                     {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
+                  </MenuItem>
+                  ))}
+               </Select>
+            </FormControl>
+         </Stack>
+
+
       {flavors.map((flavor) => (
               <div key={flavor}>
                 <label>

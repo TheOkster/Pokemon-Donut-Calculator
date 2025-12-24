@@ -3,16 +3,21 @@ import './App.css'
 import Papa from "papaparse"
 import Settings, { type BerryDict, type BerryQuantDict } from './Settings'
 import { Button } from '@mui/material';
+export const flavors = ["sweet", "spicy", "sour", "bitter", "fresh"] as const;
+export type Flavor = (typeof flavors)[number];
+
 function App() {
+
 
   const [maxBerries, setMaxBerries] = useState(8);
   const [berryStats, setBerryStats] = useState<BerryDict>({});
   const [berryQuants, setBerryQuants] = useState<BerryQuantDict>({});
-  const [starRange, setStarRange] = useState<[number, number]>([1, 5]);
+  const [starRange, setStarRange] = useState<[number, number]>([0, 5]);
   const starCalorieCounts = [0, 120, 240, 350, 700, 960, Infinity];
-  const [results, setResults] = useState<Combination[]>([]);
-    const flavors = ["sweet", "spicy", "fresh", "bitter", "sour"] as const;
 
+  const [enableRainbow, setEnableRainbow] = useState(false);
+  const [rainbowFlavors, setRainbowFlavors] = useState<[Flavor, Flavor]>(["sweet","sour"]);
+  const [results, setResults] = useState<Combination[]>([]);
     const minVal = 0;
     const maxVal = 760;
     const [flavorValues, setFlavorValues] = useState<{
@@ -25,7 +30,6 @@ function App() {
     const newBerryQuants = { ...berryQuants, [berry]: newValue };
     setBerryQuants(newBerryQuants);
     localStorage.setItem("berryQuants", JSON.stringify(newBerryQuants));
-    // console.log(newBerryQuants);
   };
   const handleFlavorChange = (flavor: string, newValue: [number, number]) => {
     setFlavorValues((prev) => ({ ...prev, [flavor]: newValue }));
@@ -37,7 +41,6 @@ function App() {
       if (data) {
         setBerryQuants(JSON.parse(data) as Record<string, number>);
       }
-      // console.log(data);
     fetch("/berries.csv")
       .then((res) => res.text())
       .then((csvText) => {
@@ -91,10 +94,17 @@ function isSubset(a: Combination, b: Combination): boolean {
   return true;
 }
 
-function meetsThresholds(stats: FlavorStats, flavorValues: {[flavor: string]: [number, number]}, starRange: [number, number]): Boolean {
+function meetsThresholds(stats: FlavorStats): Boolean {
+  if(enableRainbow && (stats[rainbowFlavors[0]] != stats[rainbowFlavors[1]])) {
+    return false;
+  }
   for (const key in stats){
     if(key in flavorValues){
       if(stats[key] < flavorValues[key][0] || stats[key] > flavorValues[key][1]){
+        return false;
+      }
+
+      if(enableRainbow && !(key in rainbowFlavors) && stats[key] >  stats[rainbowFlavors[0]]){
         return false;
       }
 
@@ -103,7 +113,7 @@ function meetsThresholds(stats: FlavorStats, flavorValues: {[flavor: string]: [n
         return false;
       }
     } else{
-      // console.log(`${key} is not in flavorValues`)
+      console.log(`${key} is not in flavorValues`)
     }
   }
   return true;
@@ -113,17 +123,17 @@ function willNeverMeetThresholds(stats: FlavorStats, flavorValues: {[flavor: str
   for (const key in stats){
     if(key in flavorValues){
       if(stats[key] < (flavorValues[key][0] - 95 * berriesLeft) || stats[key] > flavorValues[key][1]){
-        // console.log(`${stats[key]} will never reach ${flavorValues[key][0]} with ${berriesLeft}`);
+        console.log(`${stats[key]} will never reach ${flavorValues[key][0]} with ${berriesLeft}`);
         return true;
       }
 
     } else if (key === "calories") {
       if(stats[key] < (starCalorieCounts[starRange[0]] - 400 * berriesLeft) || stats[key] > starCalorieCounts[starRange[1]+1]){
-        // console.log(`${stats[key]} don't have enough calories`);
+        console.log(`${stats[key]} don't have enough calories`);
         return true;
       }
     } else{
-      // console.log(`${key} is not in flavorValues`)
+      console.log(`${key} is not in flavorValues`)
     }
   }
   return false;
@@ -192,14 +202,15 @@ const sortedBerries = Object.keys(berryQuants)
     //     return;
     //   }
     // }
-    if (berriesSelected > 0 && meetsThresholds(currentStats, flavorValues, starRange)) {
+    if (berriesSelected > 0 && meetsThresholds(currentStats)) {
       insertMinimal(results, { ...currentCombo });
+      console.log(`${JSON.stringify(currentCombo)} meets thresholds`);
       return;
     } else if (berriesSelected > 0 && willNeverMeetThresholds(currentStats, flavorValues, starRange, maxBerries - berriesSelected)){
-      // console.log(`${currentCombo} will never meet thresholds`);
+      console.log(`${JSON.stringify(currentCombo)} will never meet thresholds`);
       return;   
     } else {
-      // console.log(`${currentCombo} does not meet thresholds, i = ${i}`);
+      console.log(`${JSON.stringify(currentCombo)} does not meet thresholds, i = ${i}`);
     }
 
     if (i >= sortedBerries.length || berriesSelected >= maxBerries) return;
@@ -209,7 +220,7 @@ const sortedBerries = Object.keys(berryQuants)
     let helps = false;
     for (const flavor of flavors) {
       if (
-        currentStats[flavor] < flavorValues[flavor][0] &&
+        enableRainbow || currentStats[flavor] < flavorValues[flavor][0] &&
         berryStats[berry][flavor] > 0 || currentStats["calories"] < starCalorieCounts[starRange[0]] || berriesSelected === 0
       ) {
         helps = true;
@@ -245,6 +256,8 @@ const sortedBerries = Object.keys(berryQuants)
     <>
 
       <Settings
+      enableRainbow={enableRainbow}
+      rainbowFlavors={rainbowFlavors}
       starRange={starRange}
       flavorValues={flavorValues}
       maxBerries={maxBerries}
@@ -253,8 +266,14 @@ const sortedBerries = Object.keys(berryQuants)
       onStarRangeChange={setStarRange}
       onFlavorValuesChange={handleFlavorChange}
       onBerryQuantsChange={handleBerryQuantsChange}
-      onMaxBerriesChange={setMaxBerries}/>   
-      <Button variant="contained" onClick={() => setResults(findValidCombinations())}>Calculate</Button>
+      onMaxBerriesChange={setMaxBerries}
+      onRainbowChange={setEnableRainbow}
+      onRainbowFlavorChange={setRainbowFlavors}/>   
+      <Button variant="contained" onClick={() => setResults(findValidCombinations().sort((a, b) => {
+          const aCalories = Object.entries(a).reduce((acc, [key, val]) => acc + berryStats[key]["calories"] * val, 0);
+          const bCalories = Object.entries(b).reduce((acc, [key, val]) => acc + berryStats[key]["calories"] * val, 0);
+          return aCalories - bCalories;
+      }))}>Calculate</Button>
       {results.length}
       {results.map((combo, index) => (
           <div key={index}>

@@ -1,9 +1,7 @@
-TODO: Sort by cheapest recipes first
-TODO: see if there's any way i can get cheapest recipes and then stop later (not really)
-TODO: Rainbow Donuts Recipe
-TODO: Make look pretty
-TODO: Make look pretty on mobile
+Priority:
 TOOD: Recipes Component
-TODO: Publish on GitHub
+TODO: Make look pretty
 TODO: Hyperspace only
-TODO: Cookies
+TODO: see if there's any way i can get cheapest recipes and then stop when enough recipes have been created
+TODO: Make look pretty on mobile
+TODO: Publish on GitHub
