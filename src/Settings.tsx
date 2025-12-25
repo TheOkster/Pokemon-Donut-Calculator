@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react'
 import { Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Slider, Stack, TextField } from '@mui/material'
 import RangeSelector from './RangeSelector'
 import { flavors, type Flavor } from './App';
-  export interface BerryDict {
-    [key: string]: Record<string, number>;
-  }
+export interface BerryDict {
+   [key: string]: Record<string, number>;
+}
 
-  export interface BerryQuantDict {
-    [key: string]: number;
-  }
+export interface BerryQuantDict {
+   [key: string]: number;
+}
 
-  interface BerryProps {
+interface BerryProps {
    starRange: [number, number];
    flavorValues: {
-    [key: string]: [number, number];
+      [key: string]: [number, number];
    };
    maxBerries: number;
    berryQuants: BerryQuantDict;
@@ -28,93 +28,93 @@ import { flavors, type Flavor } from './App';
    onRainbowChange?: (rainbowEnabled: boolean) => void;
    onRainbowFlavorChange?: (rainbowFlavors: [Flavor, Flavor]) => void;
    onMaxResultsChange: (maxResults: number) => void;
-  }
-export default function Settings({starRange, maxBerries, berryQuants, berryStats, enableRainbow, rainbowFlavors, maxResults, onStarRangeChange, onFlavorValuesChange, onBerryQuantsChange, onMaxBerriesChange, onRainbowChange, onRainbowFlavorChange, onMaxResultsChange}: BerryProps){
-//   const [starValue, setStarValue] = useState<[number, number]>([1, 5])
-  const minVal = 0;
-  const maxVal = 760;
-  
-  const [flavorValues, setFlavorValues] = useState<{
-    [key: string]: [number, number];
-  }>(Object.fromEntries(
-  flavors.map((taste) => [taste, [minVal, maxVal]])
-));
+}
+export default function Settings({ starRange, maxBerries, berryQuants, berryStats, enableRainbow, rainbowFlavors, maxResults, onStarRangeChange, onFlavorValuesChange, onBerryQuantsChange, onMaxBerriesChange, onRainbowChange, onRainbowFlavorChange, onMaxResultsChange }: BerryProps) {
+   //   const [starValue, setStarValue] = useState<[number, number]>([1, 5])
+   const minVal = 0;
+   const maxVal = 760;
 
-  function starText(value: number) { 
-    if(value === 1) return `${value} Star`; 
-    else return `${value} Stars`; 
-  } 
+   const [flavorValues, setFlavorValues] = useState<{
+      [key: string]: [number, number];
+   }>(Object.fromEntries(
+      flavors.map((taste) => [taste, [minVal, maxVal]])
+   ));
 
-//   const [maxBerryNum, setMaxBerryNum] = useState(8);
+   function starText(value: number) {
+      if (value === 1) return `${value} Star`;
+      else return `${value} Stars`;
+   }
 
-//   const [berries, setBerries] = useState<BerryDict>({});
-//   const [berryQuants, setBerryQuants] = useState<BerryQuantDict>({});
-  // const [berryTextFieldQuants, setBerryTextFieldQuants] = useState<BerryQuantDict>({});
+   //   const [maxBerryNum, setMaxBerryNum] = useState(8);
 
-  const handleFlavorChange = (taste: keyof typeof flavorValues, newValue: [number, number]) => {
-    setFlavorValues((prev) => ({ ...prev, [taste]: newValue }));
-  };
-//   const handleBerryQuantsChange = (berry: string, newValue: number) => {
-//     setBerryQuants((prev) => ({ ...prev, [berry]: newValue }));
-//   };
+   //   const [berries, setBerries] = useState<BerryDict>({});
+   //   const [berryQuants, setBerryQuants] = useState<BerryQuantDict>({});
+   // const [berryTextFieldQuants, setBerryTextFieldQuants] = useState<BerryQuantDict>({});
 
-//   useEffect(() => {
-//     fetch("/berries.csv")
-//       .then((res) => res.text())
-//       .then((csvText) => {
-//         const parsed = Papa.parse<string[]>(csvText, { skipEmptyLines: true });
-//         const [headerRow, ...rows] = parsed.data;
-//         const headers = headerRow.slice(1).map((header) => header.toLowerCase() );
-//         const result: BerryDict = {};
-//         const quantsTemp: BerryQuantDict = {};
+   const handleFlavorChange = (taste: keyof typeof flavorValues, newValue: [number, number]) => {
+      setFlavorValues((prev) => ({ ...prev, [taste]: newValue }));
+   };
+   //   const handleBerryQuantsChange = (berry: string, newValue: number) => {
+   //     setBerryQuants((prev) => ({ ...prev, [berry]: newValue }));
+   //   };
 
-//         rows.forEach((row) => {
-//           const key = row[0];
-//           const values: Record<string, number> = {};
-//           headers.forEach((header, index) => {
-//             values[header] = Number(row[index + 1]);
-//           });
-//           result[key] = values;
-//           quantsTemp[key] = 0;
-//         });
+   //   useEffect(() => {
+   //     fetch("/berries.csv")
+   //       .then((res) => res.text())
+   //       .then((csvText) => {
+   //         const parsed = Papa.parse<string[]>(csvText, { skipEmptyLines: true });
+   //         const [headerRow, ...rows] = parsed.data;
+   //         const headers = headerRow.slice(1).map((header) => header.toLowerCase() );
+   //         const result: BerryDict = {};
+   //         const quantsTemp: BerryQuantDict = {};
 
-//         setBerries(result);
-//         setBerryQuants(quantsTemp);
-//       });
-//   }, []);
+   //         rows.forEach((row) => {
+   //           const key = row[0];
+   //           const values: Record<string, number> = {};
+   //           headers.forEach((header, index) => {
+   //             values[header] = Number(row[index + 1]);
+   //           });
+   //           result[key] = values;
+   //           quantsTemp[key] = 0;
+   //         });
 
-  return (
-    <>
-     <Slider
-        getAriaLabel={() => 'Star Range'}
-        value={starRange}
-        onChange={(e, v) => onStarRangeChange?.(v as [number, number])}
-        valueLabelDisplay="on"
-        valueLabelFormat={starText}
-        getAriaValueText={starText}
-        min={0}
-        max={5}
-      />
-      <Slider
-        getAriaLabel={() => 'Max Number of Berries'}
-        value={maxBerries}
-        onChange={(e, v) => onMaxBerriesChange?.(Number(v))}
-        valueLabelDisplay="on"
-        min={1}
-        max={8}
-      />
+   //         setBerries(result);
+   //         setBerryQuants(quantsTemp);
+   //       });
+   //   }, []);
 
-      <TextField
+   return (
+      <>
+         <Slider
+            getAriaLabel={() => 'Star Range'}
+            value={starRange}
+            onChange={(e, v) => onStarRangeChange?.(v as [number, number])}
+            valueLabelDisplay="on"
+            valueLabelFormat={starText}
+            getAriaValueText={starText}
+            min={0}
+            max={5}
+         />
+         <Slider
+            getAriaLabel={() => 'Max Number of Berries'}
+            value={maxBerries}
+            onChange={(e, v) => onMaxBerriesChange?.(Number(v))}
+            valueLabelDisplay="on"
+            min={1}
+            max={8}
+         />
+
+         <TextField
             label="Max Results"
             type="number"
             size="small"
             value={maxResults}
             onChange={(e) => onMaxResultsChange?.(parseInt(e.target.value, 10))}
-            />
+         />
          <FormControlLabel
-         control={<Checkbox checked={enableRainbow} onChange={(e) => onRainbowChange?.(Boolean(e.target.checked))} />}
-         label="Rainbow"
-         labelPlacement="start"
+            control={<Checkbox checked={enableRainbow} onChange={(e) => onRainbowChange?.(Boolean(e.target.checked))} />}
+            label="Rainbow"
+            labelPlacement="start"
          />
 
          <Stack direction="row" spacing={2} alignItems="center" padding="0.5">
@@ -125,14 +125,14 @@ export default function Settings({starRange, maxBerries, berryQuants, berryStats
                   label="Rainbow Flavor A"
                   onChange={(e) => onRainbowFlavorChange?.([e.target.value, rainbowFlavors[1]])}
                >
-                 {flavors.map((flavor) => (
-                  <MenuItem key={flavor} value={flavor}>
-                     {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
-                  </MenuItem>
+                  {flavors.map((flavor) => (
+                     <MenuItem key={flavor} value={flavor}>
+                        {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
+                     </MenuItem>
                   ))}
                </Select>
             </FormControl>
-               <FormControl fullWidth>
+            <FormControl fullWidth>
                <InputLabel>Flavor B</InputLabel>
                <Select
                   value={rainbowFlavors[1]}
@@ -140,42 +140,41 @@ export default function Settings({starRange, maxBerries, berryQuants, berryStats
                   onChange={(e) => onRainbowFlavorChange?.([rainbowFlavors[0], e.target.value])}
                >
                   {flavors.map((flavor) => (
-                  <MenuItem key={flavor} value={flavor}>
-                     {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
-                  </MenuItem>
+                     <MenuItem key={flavor} value={flavor}>
+                        {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
+                     </MenuItem>
                   ))}
                </Select>
             </FormControl>
          </Stack>
 
 
-      {flavors.map((flavor) => (
-              <div key={flavor}>
-                <label>
+         {flavors.map((flavor) => (
+            <div key={flavor}>
+               <label>
                   {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
-                </label>
-                <RangeSelector
-                  value={flavorValues[flavor]}
+               </label>
+               <RangeSelector
                   onChange={(newVal) => onFlavorValuesChange?.(flavor, newVal)}
                   minVal={minVal}
                   maxVal={maxVal}
-                />
-              </div>
-            ))}    
-            {Object.keys(berryStats).map((berry) => (
-              <Stack direction="row" spacing={2} alignItems="center" padding={0.5}>
-                <label>
-                    {berry}
-                  </label>
-                <TextField
+               />
+            </div>
+         ))}
+         {Object.keys(berryStats).map((berry) => (
+            <Stack key={berry} direction="row" spacing={2} alignItems="center" padding={0.5}>
+               <label>
+                  {berry}
+               </label>
+               <TextField
                   label="Min"
                   type="number"
                   size="small"
                   value={berryQuants[berry]}
                   onChange={(e) => onBerryQuantsChange?.(berry, Math.max(0, Number(e.target.value)))}
-                />
-              </Stack>
-            ))}    
+               />
+            </Stack>
+         ))}
       </>
-  )
+   )
 }

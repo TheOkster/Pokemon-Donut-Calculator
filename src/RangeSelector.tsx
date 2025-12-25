@@ -1,16 +1,15 @@
 import * as React from "react";
 import {
-  Slider,
-  Stack,
-  TextField,
+   Slider,
+   Stack,
+   TextField,
 } from "@mui/material";
 interface RangeSelectorProps {
-  value: [number, number];
-  onChange?: (newVal: [number, number]) => void;
-  minVal?: number;
-  maxVal?: number;
+   onChange?: (newVal: [number, number]) => void;
+   minVal?: number;
+   maxVal?: number;
 }
-export default function RangeSelector({ value, onChange, minVal = 0, maxVal = 999}: RangeSelectorProps) {
+export default function RangeSelector({ onChange, minVal = 0, maxVal = 999 }: RangeSelectorProps) {
    const [sliderVal, setSliderVal] = React.useState<[number, number]>([minVal, maxVal]);
    const [minInp, setMinInp] = React.useState(minVal);
    const [maxInp, setMaxInp] = React.useState(maxVal);
@@ -21,8 +20,8 @@ export default function RangeSelector({ value, onChange, minVal = 0, maxVal = 99
       if (onChange) onChange(newVal);
    }
 
-  return (
-   <Stack direction="row" spacing={2} alignItems="center">
+   return (
+      <Stack direction="row" spacing={2} alignItems="center">
          <TextField
             label="Min"
             type="number"
@@ -44,7 +43,7 @@ export default function RangeSelector({ value, onChange, minVal = 0, maxVal = 99
             min={minVal}
             max={maxVal}
             disableSwap
-            sx={{ mx: 1}}
+            sx={{ mx: 1 }}
          />
 
          <TextField
@@ -60,5 +59,5 @@ export default function RangeSelector({ value, onChange, minVal = 0, maxVal = 99
          />
 
       </Stack>
-  );
+   );
 }
