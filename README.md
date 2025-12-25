@@ -1,7 +1,9 @@
 Priority:
-TOOD: Recipes Component
+TODO: Use worker so UI doesn't freeze
+TODO: Custom Sorting Score (probably primarily based off bitter + spicy + to a lesser extent fresh + sour/sweet very low )
+TODO: Change Rainbow to dominant score
 TODO: Make look pretty
 TODO: Hyperspace only
-TODO: see if there's any way i can get cheapest recipes and then stop when enough recipes have been created
 TODO: Make look pretty on mobile
 TODO: Publish on GitHub
+TODO: Fix UI speed

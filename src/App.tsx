@@ -10,6 +10,7 @@ function App() {
 
 
   const [maxBerries, setMaxBerries] = useState(8);
+  const [maxNumResults, setMaxNumResults] = useState(25);
   const [berryStats, setBerryStats] = useState<BerryDict>({});
   const [berryQuants, setBerryQuants] = useState<BerryQuantDict>({});
   const [starRange, setStarRange] = useState<[number, number]>([0, 5]);
@@ -123,25 +124,28 @@ function willNeverMeetThresholds(stats: FlavorStats, flavorValues: {[flavor: str
   for (const key in stats){
     if(key in flavorValues){
       if(stats[key] < (flavorValues[key][0] - 95 * berriesLeft) || stats[key] > flavorValues[key][1]){
-        console.log(`${stats[key]} will never reach ${flavorValues[key][0]} with ${berriesLeft}`);
+        // console.log(`${stats[key]} will never reach ${flavorValues[key][0]} with ${berriesLeft}`);
         return true;
       }
 
     } else if (key === "calories") {
       if(stats[key] < (starCalorieCounts[starRange[0]] - 400 * berriesLeft) || stats[key] > starCalorieCounts[starRange[1]+1]){
-        console.log(`${stats[key]} don't have enough calories`);
+        // console.log(`${stats[key]} don't have enough calories`);
         return true;
       }
     } else{
-      console.log(`${key} is not in flavorValues`)
+      // console.log(`${key} is not in flavorValues`)
     }
   }
   return false;
 }
 
-
+type Result = {
+  combo: Combination;
+  calories: number;
+};
 function findValidCombinations(): Combination[] {
-  const results: Combination[] = [];
+  const results: Result[] = [];
   const baseStats: FlavorStats = Object.fromEntries(flavors.map((flavor) =>[flavor, 0]));
   baseStats["calories"] = 0;
   function berryUtility(berry: string): number {
@@ -158,31 +162,37 @@ function findValidCombinations(): Combination[] {
       score += stats.calories / Math.max(1, starCalorieCounts[starRange[0]]);
       return score;
   }
-function insertMinimal(results: Combination[], combo: Combination): boolean {
+function tryInsert(combo: Combination, calories: number): boolean {
+  if (
+    results.length === maxNumResults &&
+    calories > results[0].calories
+  ) {
+    return false;
+  }
+
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
 
-    const rSubC = isSubset(r, combo);
-    const cSubR = isSubset(combo, r);
+    const rSubC = isSubset(r.combo, combo);
+    const cSubR = isSubset(combo, r.combo);
 
-    if (rSubC && !cSubR) {
-      // existing is strictly better
-      return false;
-    }
+    if (rSubC && !cSubR) return false;
 
     if (cSubR && !rSubC) {
-      // new combo dominates old
       results.splice(i, 1);
       i--;
     }
 
-    if (rSubC && cSubR) {
-      // equal
-      return false;
-    }
+    if (rSubC && cSubR) return false;
   }
 
-  results.push(combo);
+  results.push({ combo, calories });
+  results.sort((a, b) => b.calories - a.calories);
+
+  if (results.length > maxNumResults) {
+    results.length = maxNumResults;
+  }
+
   return true;
 }
 
@@ -196,21 +206,27 @@ const sortedBerries = Object.keys(berryQuants)
     berriesSelected: number,
   ) {
     // console.log(currentCombo);
-    // for (const r of results) {
-    //   if (isSubset(r, currentCombo)) {
-    //       // console.log(`${currentCombo} is superseded`);
-    //     return;
-    //   }
-    // }
-    if (berriesSelected > 0 && meetsThresholds(currentStats)) {
-      insertMinimal(results, { ...currentCombo });
-      console.log(`${JSON.stringify(currentCombo)} meets thresholds`);
+    if (
+    results.length === maxNumResults &&
+    currentStats.calories > results[0].calories) {
+      return;
+    }
+
+    for (const r of results) {
+      if (isSubset(r.combo, currentCombo)) {
+          // console.log(`${currentCombo} is superseded`);
+        return;
+      }
+    }
+    if (berriesSelected > 2 && meetsThresholds(currentStats)) {
+      tryInsert({ ...currentCombo }, currentStats.calories);
+      // console.log(`${JSON.stringify(currentCombo)} meets thresholds`);
       return;
     } else if (berriesSelected > 0 && willNeverMeetThresholds(currentStats, flavorValues, starRange, maxBerries - berriesSelected)){
-      console.log(`${JSON.stringify(currentCombo)} will never meet thresholds`);
+      // console.log(`${JSON.stringify(currentCombo)} will never meet thresholds`);
       return;   
     } else {
-      console.log(`${JSON.stringify(currentCombo)} does not meet thresholds, i = ${i}`);
+      // console.log(`${JSON.stringify(currentCombo)} does not meet thresholds, i = ${i}`);
     }
 
     if (i >= sortedBerries.length || berriesSelected >= maxBerries) return;
@@ -220,8 +236,8 @@ const sortedBerries = Object.keys(berryQuants)
     let helps = false;
     for (const flavor of flavors) {
       if (
-        enableRainbow || currentStats[flavor] < flavorValues[flavor][0] &&
-        berryStats[berry][flavor] > 0 || currentStats["calories"] < starCalorieCounts[starRange[0]] || berriesSelected === 0
+        enableRainbow || berriesSelected < 3 || currentStats[flavor] < flavorValues[flavor][0] &&
+        berryStats[berry][flavor] > 0 || currentStats["calories"] < starCalorieCounts[starRange[0]]
       ) {
         helps = true;
         break;
@@ -235,22 +251,13 @@ const sortedBerries = Object.keys(berryQuants)
         { ...currentCombo, [berry]: (currentCombo[berry] ?? 0) + 1 },
         berriesSelected + 1
       );  }
-    // if (berriesSelected < maxBerries && (currentCombo[berry] ?? 0) < berryQuants[berry]) {
-    //   // console.log("here in theory");
-    //   backtrack(
-    //     i,
-    //     addStats(currentStats, berryStats[berry], 1),
-    //     { ...currentCombo, [berry]: (currentCombo[berry] ?? 0) + 1 },
-    //     berriesSelected + 1
-    //   );
-    // }
     backtrack(i + 1, currentStats, currentCombo, berriesSelected);
     // console.log(currentCombo[berry]);
 
   }
 
   backtrack(0, baseStats, {}, 0);
-  return results;
+  return results.map((result) => result.combo);
 }
   return (
     <>
@@ -263,17 +270,20 @@ const sortedBerries = Object.keys(berryQuants)
       maxBerries={maxBerries}
       berryQuants={berryQuants}
       berryStats={berryStats}
+      maxResults={maxNumResults}
       onStarRangeChange={setStarRange}
       onFlavorValuesChange={handleFlavorChange}
       onBerryQuantsChange={handleBerryQuantsChange}
+      onMaxResultsChange={setMaxNumResults}
       onMaxBerriesChange={setMaxBerries}
       onRainbowChange={setEnableRainbow}
       onRainbowFlavorChange={setRainbowFlavors}/>   
-      <Button variant="contained" onClick={() => setResults(findValidCombinations().sort((a, b) => {
-          const aCalories = Object.entries(a).reduce((acc, [key, val]) => acc + berryStats[key]["calories"] * val, 0);
-          const bCalories = Object.entries(b).reduce((acc, [key, val]) => acc + berryStats[key]["calories"] * val, 0);
-          return aCalories - bCalories;
-      }))}>Calculate</Button>
+      <Button variant="contained" onClick={() => setResults(findValidCombinations())}>Calculate</Button>
+      {/* // .sort((a, b) => {
+      //     const aCalories = Object.entries(a).reduce((acc, [key, val]) => acc + berryStats[key]["calories"] * val, 0);
+      //     const bCalories = Object.entries(b).reduce((acc, [key, val]) => acc + berryStats[key]["calories"] * val, 0);
+      //     return aCalories - bCalories;
+      // }))} */}
       {results.length}
       {results.map((combo, index) => (
           <div key={index}>

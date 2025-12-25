@@ -20,14 +20,16 @@ import { flavors, type Flavor } from './App';
    berryStats: BerryDict;
    enableRainbow: boolean;
    rainbowFlavors: [Flavor, Flavor],
+   maxResults: number,
    onStarRangeChange?: (starRange: [number, number]) => void;
    onFlavorValuesChange?: (flavor: string, newValue: [number, number]) => void;
    onBerryQuantsChange?: (berry: string, newQuant: number) => void;
    onMaxBerriesChange?: (maxBerries: number) => void;
    onRainbowChange?: (rainbowEnabled: boolean) => void;
    onRainbowFlavorChange?: (rainbowFlavors: [Flavor, Flavor]) => void;
+   onMaxResultsChange: (maxResults: number) => void;
   }
-export default function Settings({starRange, maxBerries, berryQuants, berryStats, enableRainbow, rainbowFlavors, onStarRangeChange, onFlavorValuesChange, onBerryQuantsChange, onMaxBerriesChange, onRainbowChange, onRainbowFlavorChange}: BerryProps){
+export default function Settings({starRange, maxBerries, berryQuants, berryStats, enableRainbow, rainbowFlavors, maxResults, onStarRangeChange, onFlavorValuesChange, onBerryQuantsChange, onMaxBerriesChange, onRainbowChange, onRainbowFlavorChange, onMaxResultsChange}: BerryProps){
 //   const [starValue, setStarValue] = useState<[number, number]>([1, 5])
   const minVal = 0;
   const maxVal = 760;
@@ -101,6 +103,14 @@ export default function Settings({starRange, maxBerries, berryQuants, berryStats
         min={1}
         max={8}
       />
+
+      <TextField
+            label="Max Results"
+            type="number"
+            size="small"
+            value={maxResults}
+            onChange={(e) => onMaxResultsChange?.(parseInt(e.target.value, 10))}
+            />
          <FormControlLabel
          control={<Checkbox checked={enableRainbow} onChange={(e) => onRainbowChange?.(Boolean(e.target.checked))} />}
          label="Rainbow"
