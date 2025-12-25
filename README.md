@@ -1,5 +1,4 @@
 Priority:
-TODO: Use worker so UI doesn't freeze
 TODO: Custom Sorting Score (probably primarily based off bitter + spicy + to a lesser extent fresh + sour/sweet very low )
 TODO: Change Rainbow to dominant score
 TODO: Make look pretty
