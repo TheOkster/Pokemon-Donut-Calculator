@@ -34,3 +34,37 @@
 .right{
   overflow-y: auto; /* enable vertical scrolling within the right column */
 }
+
+@media (max-width: 1120px) {
+  .container {
+    flex-direction: column;
+    width: 100vw;
+    height: auto;
+  }
+  .left,
+  .right {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 1120px) {
+  .container {
+    flex-direction: column;
+    width: 100vw;
+    height: auto;
+    min-height: 0;
+    overflow-y: visible;
+  }
+  .left,
+  .right {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    padding: 1rem;
+    overflow-y: visible;
+  }
+}

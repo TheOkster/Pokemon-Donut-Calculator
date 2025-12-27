@@ -43,7 +43,8 @@ export default function Settings({ starRange, maxBerries, berryQuants, berryStat
       <div className="settings">
          {/* Flavor & Star Settings */}
          <div className="left">
-            <Stack direction="row" spacing={2} alignItems="center" padding="0.5">
+            <Stack direction="row" spacing={2} alignItems="center" padding="0.5" className="starRange"
+            >
                <label>
                   Star Range
                </label>
