@@ -1,0 +1,167 @@
+/* ---------- Card ---------- */
+
+.card {
+   width: 100%;
+   max-width: none; 
+   min-height: 0;
+   height: auto;
+
+   flex: 0 0 auto; 
+
+   display: flex;
+   flex-direction: column;
+   gap: 0.25rem;
+
+   background: #f6e4d8;
+   border: 4px solid #000;
+   border-radius: 999px;
+   overflow: hidden; 
+   position: relative;
+   box-sizing: border-box;
+   padding: 0.25rem 0.5rem 4px; 
+
+   color: #213547; 
+}
+.card:hover {
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.header {
+   padding: 12px 16px;
+   display: grid;
+   grid-template-columns: auto 1fr;
+   align-items: center; /* center items vertically */
+   column-gap: 16px;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stars {
+   font-size: 22px;
+   font-weight: 700;
+   line-height: 1;
+   display: inline-flex;
+   align-items: center;
+}
+
+.star-symbol {
+  margin-left: 6px;
+  color: #f5b642;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.calories {
+   font-size: 14px;
+   display: inline-flex;
+   align-items: baseline;
+   gap: 4px;
+}
+
+.cal-number, .cal-suffix {
+  display: inline-block;
+  line-height: 1;
+}
+
+.cal-number {
+  font-weight: 600;
+}
+
+.cal-suffix {
+  margin-left: 0px;
+  font-size: 12px;
+  color: rgba(33, 53, 71, 0.75);
+}
+.items {
+   font-size: 18px;
+   font-weight: 500;
+   white-space: normal;
+   overflow: visible;
+   text-overflow: unset;
+}
+
+/* ---------- Stats Row (contained full-width within card) ---------- */
+
+.stats-row {
+   margin-top: auto; /* push stats row to bottom */
+   display: grid;
+   grid-template-columns: repeat(5, 1fr);
+   position: relative;
+   z-index: 2;
+
+   /* pull the background to the card's inner edge (card has 0.5rem horizontal padding) */
+   margin-left: -0.5rem;
+   margin-right: -0.5rem;
+   padding: 6px 0 0; /* no horizontal padding so background reaches inner edges */
+
+   border-bottom-left-radius: 999px;
+   border-bottom-right-radius: 999px;
+}
+
+/* colors taken from PLZA screenshots */
+.stat.sour { background: #b8841e; }
+.stat.spicy { background: #b5525a; }
+.stat.fresh { background: #548039; }
+.stat.bitter { background: #8684ae; }
+.stat.sweet { background: #a66c89; }
+
+.stat { color: #fff; }
+
+
+.stat {
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+
+   color: #fff;
+   box-sizing: border-box;
+   padding: 10px 12px 12px; /* increased padding for breathing room */
+   border-right: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+/* keep background flush but add text breathing room on the edges */
+.stat:first-child { padding-left: 28px; }
+.stat:last-child { padding-right: 28px; }
+
+.stat .value { white-space: nowrap; }
+
+.stat:last-child {
+   border-right: none;
+}
+
+@media (max-width: 600px) {
+  .stat:first-child { padding-left: 12px; }
+  .stat:last-child { padding-right: 12px; }
+}
+
+.stat .label {
+   font-size: 12px;
+   line-height: 1;
+   text-transform: capitalize;
+   font-weight: 700;
+}
+
+.stat .value {
+   font-size: 18px;
+   font-weight: 700;
+   line-height: 1;
+}
+
+.card-bottom-blend {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 25%;
+  border-bottom-left-radius: 999px;
+  border-bottom-right-radius: 999px;
+  z-index: 1;
+  pointer-events: none;
+  background: #fff9c4;
+  opacity: 0.18;
+}

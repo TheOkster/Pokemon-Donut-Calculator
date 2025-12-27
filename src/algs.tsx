@@ -1,5 +1,5 @@
 import type { BerryDict, BerryQuantDict } from "./Settings";
-import { flavors, type Combination, type Flavor, type FlavorStats } from "./utils";
+import { calcStars, flavors, type Combination, type Flavor, type FlavorStats } from "./utils";
 
 const STAR_CALORIES_COUNTS: readonly number[] = [0, 120, 240, 350, 700, 960, Infinity];
 const MAX_BERRY_FLAVOR = 95;
@@ -33,7 +33,15 @@ function isSubset(a: Combination, b: Combination): boolean {
    }
    return true;
 }
-
+/**
+ * Says whether a pair of stats meets the thresholds
+ * @param stats a FlavorStats instance
+ * @param enableRainbow checks whether rainbow is enabled
+ * @param flavorValues an object with flavor strings and a range of valid numbers as a value (inclusive)
+ * @param rainbowFlavors the dominant flavors if applicable
+ * @param starRange the range of valid stars (inclusive)
+ * @returns true iff the stats meets the thresholds
+ */
 function meetsThresholds(stats: FlavorStats, enableRainbow: boolean, flavorValues: { [flavor: string]: [number, number] }, rainbowFlavors: [Flavor, Flavor], starRange: [number, number]): Boolean {
    if (enableRainbow && (stats[rainbowFlavors[0]] != stats[rainbowFlavors[1]])) {
       return false;
@@ -49,7 +57,7 @@ function meetsThresholds(stats: FlavorStats, enableRainbow: boolean, flavorValue
          }
 
       } else if (key === "calories") {
-         if (stats[key] < STAR_CALORIES_COUNTS[starRange[0]] || stats[key] > STAR_CALORIES_COUNTS[starRange[1] + 1]) {
+         if (calcStars(stats[key]) < starRange[0] || calcStars(stats[key]) > starRange[1]) {
             return false;
          }
       } else {
@@ -58,22 +66,26 @@ function meetsThresholds(stats: FlavorStats, enableRainbow: boolean, flavorValue
    }
    return true;
 }
-
+/**
+ * Returns true if it is determined that it is impossible to meet thresholds even with future berries
+ * This is not comprehensive, so returns false more than it should.
+ * @param stats a FlavorStats instance
+ * @param flavorValues an object with flavor strings and a range of valid numbers as a value (inclusive)
+ * @param starRange the range of valid stars (inclusive)
+ * @param berriesLeft the number of berries that can still be added
+ * @returns true if it is determined stats can never reach threshols
+ */
 function willNeverMeetThresholds(stats: FlavorStats, flavorValues: { [flavor: string]: [number, number] }, starRange: [number, number], berriesLeft: number): Boolean {
    for (const key in stats) {
       if (key in flavorValues) {
          if (stats[key] < (flavorValues[key][0] - MAX_BERRY_FLAVOR * berriesLeft) || stats[key] > flavorValues[key][1]) {
-            // console.log(`${stats[key]} will never reach ${flavorValues[key][0]} with ${berriesLeft}`);
             return true;
          }
 
       } else if (key === "calories") {
          if (stats[key] < (STAR_CALORIES_COUNTS[starRange[0]] - MAX_CALORIES_BERRY * berriesLeft) || stats[key] > STAR_CALORIES_COUNTS[starRange[1] + 1]) {
-            // console.log(`${stats[key]} don't have enough calories`);
             return true;
          }
-      } else {
-         // console.log(`${key} is not in flavorValues`)
       }
    }
    return false;
@@ -83,10 +95,24 @@ type Result = {
    combo: Combination;
    score: number;
 };
+/**
+ * Finds valid combinations of berries given constraints, returns the top maxNuMresults combinations according to the scorer function
+ * @param berryStats list of berries to their flavor stats
+ * @param flavorValues an object with flavor strings and a range of valid numbers as a value (inclusive)
+ * @param rainbowFlavors two dominant flavors if applicable
+ * @param starRange the range of valid stars (inclusive)
+ * @param berryQuants the number of each berry available 
+ * @param maxBerries the max berries that can be used in the recipes
+ * @param maxNumResults the maximum number of results to return
+ * @param enableRainbow whether rainbow donuts are enabled
+ * @param scorer the function that should return a score for a given combination
+ * @returns 
+ */
 export function findValidCombinations(berryStats: BerryDict, flavorValues: { [key: string]: [number, number] }, rainbowFlavors: [Flavor, Flavor], starRange: [number, number], berryQuants: BerryQuantDict, maxBerries: number, maxNumResults: number, enableRainbow: boolean, scorer: (berry: string) => number): Combination[] {
    const results: Result[] = [];
    const baseStats: FlavorStats = Object.fromEntries(flavors.map((flavor) => [flavor, 0]));
    baseStats["calories"] = 0;
+   /* Calculates a utility score for a berry based on how well it meets the flavor and calorie requirements */
    function berryUtility(berry: string): number {
       const stats = berryStats[berry];
       let score = 0;
@@ -101,6 +127,7 @@ export function findValidCombinations(berryStats: BerryDict, flavorValues: { [ke
       score += stats.calories / Math.max(1, STAR_CALORIES_COUNTS[starRange[0]]);
       return score;
    }
+   /* Tries to insert a combination into the results list, maintaining only non-subset combinations */
    function tryInsert(combo: Combination, score: number): boolean {
       if (
          results.length === maxNumResults &&
@@ -157,6 +184,7 @@ export function findValidCombinations(berryStats: BerryDict, flavorValues: { [ke
             return;
          }
       }
+      // Checks if result can be pruned  (whether it meets thresholds or not)
       if (berriesSelected > 2 && meetsThresholds(currentStats, enableRainbow, flavorValues, rainbowFlavors, starRange)) {
          tryInsert({ ...currentCombo }, currentScore);
          return;
@@ -167,6 +195,8 @@ export function findValidCombinations(berryStats: BerryDict, flavorValues: { [ke
       if (i >= sortedBerries.length || berriesSelected >= maxBerries) return;
 
       const berry = sortedBerries[i];
+
+      // only adds berries that help meet thresholds
       let helps = false;
       for (const flavor of flavors) {
          if (

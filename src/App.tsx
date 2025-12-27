@@ -6,7 +6,7 @@ import { Button } from '@mui/material';
 import type { Combination } from './utils';
 export const flavors = ["sweet", "spicy", "sour", "bitter", "fresh"] as const;
 export type Flavor = (typeof flavors)[number];
-
+import { RecipeCard } from "./RecipeCard.tsx"
 function App() {
   const [maxBerries, setMaxBerries] = useState(8);
   const [maxNumResults, setMaxNumResults] = useState(25);
@@ -31,19 +31,15 @@ function App() {
   };
 
   useEffect(() => {
-    const data = localStorage.getItem("berryQuants");
-    const quantsTemp: BerryQuantDict = data ? JSON.parse(data) as Record<string, number> : {};
-    if (data) {
-      setBerryQuants(JSON.parse(data) as Record<string, number>);
-    }
     fetch("/berries.csv")
       .then((res) => res.text())
       .then((csvText) => {
+        // loading CSV
         const parsed = Papa.parse<string[]>(csvText, { skipEmptyLines: true });
         const [headerRow, ...rows] = parsed.data;
         const headers = headerRow.slice(1).map((header) => header.toLowerCase());
         const result: BerryDict = {};
-        // const quantsTemp: BerryQuantDict = data;
+        const quantsTemp: BerryQuantDict = {};
 
         rows.forEach((row) => {
           const key = row[0];
@@ -56,12 +52,20 @@ function App() {
             quantsTemp[key] = 0;
           }
         });
-
+        // Loads from local storage and replaces default quantities
+        const data = localStorage.getItem("berryQuants");
+        const storedQuants: BerryQuantDict = data ? JSON.parse(data) as Record<string, number> : {};
+        for (const key in storedQuants) {
+          if (key in quantsTemp) {
+            quantsTemp[key] = storedQuants[key];
+          }
+        }
         setBerryStats(result);
         setBerryQuants(quantsTemp);
       });
   }, []);
 
+  // Worker for Calculations
   const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
@@ -91,33 +95,35 @@ function App() {
 
   return (
     <>
-
-      <Settings
-        enableRainbow={enableRainbow}
-        rainbowFlavors={rainbowFlavors}
-        starRange={starRange}
-        flavorValues={flavorValues}
-        maxBerries={maxBerries}
-        berryQuants={berryQuants}
-        berryStats={berryStats}
-        maxResults={maxNumResults}
-        onStarRangeChange={setStarRange}
-        onFlavorValuesChange={handleFlavorChange}
-        onBerryQuantsChange={handleBerryQuantsChange}
-        onMaxResultsChange={setMaxNumResults}
-        onMaxBerriesChange={setMaxBerries}
-        onRainbowChange={setEnableRainbow}
-        onRainbowFlavorChange={setRainbowFlavors} />
-      <Button variant="contained" disabled={isCalculating} onClick={handleCalculate}>Calculate</Button>
-
-      {results.length}
-      {results.map((combo, index) => (
-        <div key={index}>
-          {Object.entries(combo)
-            .map(([name, quantity]) => `${quantity}x ${name}`)
-            .join(', ')}
+      <div className="container">
+        <div className="left">
+          <Settings
+            enableRainbow={enableRainbow}
+            rainbowFlavors={rainbowFlavors}
+            starRange={starRange}
+            flavorValues={flavorValues}
+            maxBerries={maxBerries}
+            berryQuants={berryQuants}
+            berryStats={berryStats}
+            maxResults={maxNumResults}
+            onStarRangeChange={setStarRange}
+            onFlavorValuesChange={handleFlavorChange}
+            onBerryQuantsChange={handleBerryQuantsChange}
+            onMaxResultsChange={setMaxNumResults}
+            onMaxBerriesChange={setMaxBerries}
+            onRainbowChange={setEnableRainbow}
+            onRainbowFlavorChange={setRainbowFlavors} />
+          <Button variant="contained" disabled={isCalculating} onClick={handleCalculate}>Calculate</Button>
         </div>
-      ))}
+        <div className="right">
+          {results.length} results calculated
+          {results.map((combo) => (
+            <RecipeCard combo={combo} berryStats={berryStats} />
+          ))}
+        </div>
+      </div>
+
+
     </>
 
   )

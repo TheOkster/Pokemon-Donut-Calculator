@@ -1,0 +1,31 @@
+.settings {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: flex-start;
+  overflow-x: hidden;
+  padding: 0;
+}
+
+.settings .left,
+.settings .right {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  flex: 1 1 320px;
+  max-width: 100%;
+   padding: 3rem 2rem;
+}
+
+
+.settings .right{
+   overflow-y: auto;
+   max-height: 100%;
+   flex: 0 0 auto;
+   min-width: 120px;
+   width: max-content;
+}
+.settings .left{
+   overflow: hidden;
+   min-width: 120px;
+}

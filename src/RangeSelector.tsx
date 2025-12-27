@@ -9,6 +9,9 @@ interface RangeSelectorProps {
    minVal?: number;
    maxVal?: number;
 }
+/**
+ * Creates a range selector with a slider and min/max input boxes
+ */
 export default function RangeSelector({ onChange, minVal = 0, maxVal = 999 }: RangeSelectorProps) {
    const [sliderVal, setSliderVal] = React.useState<[number, number]>([minVal, maxVal]);
    const [minInp, setMinInp] = React.useState(minVal);
