@@ -118,7 +118,7 @@ export function findValidCombinations(berryStats: BerryDict, flavorValues: { [ke
       let score = 0;
 
       for (const flavor of flavors) {
-         const [min, max] = flavorValues[flavor];
+         const [min, _] = flavorValues[flavor];
          if (stats[flavor] > 0) {
             score += stats[flavor] / Math.max(1, min);
          }

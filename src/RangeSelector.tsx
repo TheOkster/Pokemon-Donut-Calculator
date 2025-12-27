@@ -39,7 +39,7 @@ export default function RangeSelector({ onChange, minVal = 0, maxVal = 999 }: Ra
 
          <Slider
             value={sliderVal}
-            onChange={(e, v) => {
+            onChange={(_, v) => {
                changeValues(v as [number, number]);
             }
             }

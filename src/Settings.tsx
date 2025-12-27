@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Button, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Slider, Stack, TextField } from '@mui/material'
 import RangeSelector from './RangeSelector'
 import { flavors, type Flavor } from './App';
@@ -55,7 +54,7 @@ export default function Settings({ starRange, maxBerries, berryQuants, berryStat
                <Slider
                   getAriaLabel={() => 'Star Range'}
                   value={starRange}
-                  onChange={(e, v) => onStarRangeChange?.(v as [number, number])}
+                  onChange={(_, v) => onStarRangeChange?.(v as [number, number])}
                   valueLabelDisplay="on"
                   valueLabelFormat={starText}
                   getAriaValueText={starText}
@@ -70,7 +69,7 @@ export default function Settings({ starRange, maxBerries, berryQuants, berryStat
                <Slider
                   getAriaLabel={() => 'Max Number of Berries'}
                   value={maxBerries}
-                  onChange={(e, v) => onMaxBerriesChange?.(Number(v))}
+                  onChange={(_, v) => onMaxBerriesChange?.(Number(v))}
                   valueLabelDisplay="on"
                   min={3}
                   max={8}

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import Papa from "papaparse"
 import Settings, { type BerryDict, type BerryQuantDict } from './Settings'
-import { Button } from '@mui/material';
 import type { Combination } from './utils';
 export const flavors = ["sweet", "spicy", "sour", "bitter", "fresh"] as const;
 export type Flavor = (typeof flavors)[number];
