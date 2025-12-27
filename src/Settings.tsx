@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Slider, Stack, TextField } from '@mui/material'
+import { Button, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Slider, Stack, TextField } from '@mui/material'
 import RangeSelector from './RangeSelector'
 import { flavors, type Flavor } from './App';
 import "./Settings.css"
+
+
 export interface BerryDict {
    [key: string]: Record<string, number>;
 }
@@ -22,6 +24,7 @@ interface BerryProps {
    enableRainbow: boolean;
    rainbowFlavors: [Flavor, Flavor],
    maxResults: number,
+   isCalculating?: boolean;
    onStarRangeChange?: (starRange: [number, number]) => void;
    onFlavorValuesChange?: (flavor: string, newValue: [number, number]) => void;
    onBerryQuantsChange?: (berry: string, newQuant: number) => void;
@@ -29,8 +32,9 @@ interface BerryProps {
    onRainbowChange?: (rainbowEnabled: boolean) => void;
    onRainbowFlavorChange?: (rainbowFlavors: [Flavor, Flavor]) => void;
    onMaxResultsChange: (maxResults: number) => void;
+   onCalculate?: () => void;
 }
-export default function Settings({ starRange, maxBerries, berryQuants, berryStats, enableRainbow, rainbowFlavors, maxResults, onStarRangeChange, onFlavorValuesChange, onBerryQuantsChange, onMaxBerriesChange, onRainbowChange, onRainbowFlavorChange, onMaxResultsChange }: BerryProps) {
+export default function Settings({ starRange, maxBerries, berryQuants, berryStats, enableRainbow, rainbowFlavors, maxResults, isCalculating, onStarRangeChange, onFlavorValuesChange, onBerryQuantsChange, onMaxBerriesChange, onRainbowChange, onRainbowFlavorChange, onMaxResultsChange, onCalculate }: BerryProps) {
    const minVal = 0;
    const maxVal = 760;
 
@@ -135,6 +139,7 @@ export default function Settings({ starRange, maxBerries, berryQuants, berryStat
                   onChange={(e) => onMaxResultsChange?.(parseInt(e.target.value, 10))}
                />
             </Stack>
+            <Button variant="contained" disabled={isCalculating} onClick={onCalculate}>Calculate</Button>
          </div>
          {/* Berry Quantities */}
          <div className="right">

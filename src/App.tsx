@@ -106,17 +106,23 @@ function App() {
             berryQuants={berryQuants}
             berryStats={berryStats}
             maxResults={maxNumResults}
+            isCalculating={isCalculating}
             onStarRangeChange={setStarRange}
             onFlavorValuesChange={handleFlavorChange}
             onBerryQuantsChange={handleBerryQuantsChange}
             onMaxResultsChange={setMaxNumResults}
             onMaxBerriesChange={setMaxBerries}
             onRainbowChange={setEnableRainbow}
-            onRainbowFlavorChange={setRainbowFlavors} />
-          <Button variant="contained" disabled={isCalculating} onClick={handleCalculate}>Calculate</Button>
+            onRainbowFlavorChange={setRainbowFlavors}
+            onCalculate={handleCalculate} />
+
         </div>
         <div className="right">
-          {results.length} results calculated
+          {!isCalculating && (
+            <div style={{ textAlign: 'center', fontWeight: 500, marginBottom: '1rem' }}>
+              {results.length} results calculated
+            </div>
+          )}
           {results.map((combo) => (
             <RecipeCard combo={combo} berryStats={berryStats} />
           ))}
