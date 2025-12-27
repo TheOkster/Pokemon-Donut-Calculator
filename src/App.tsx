@@ -30,7 +30,7 @@ function App() {
   };
 
   useEffect(() => {
-    fetch("/berries.csv")
+    fetch("berries.csv")
       .then((res) => res.text())
       .then((csvText) => {
         // loading CSV
