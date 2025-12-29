@@ -8,20 +8,12 @@ export type FlavorStats = {
 }
 
 
+
 /**
- * Calculates the number of stars based on calorie count.
- * @param flavorScore The total calorie count.
+ * Calculates the number of stars based on flavor stats.
+ * @param flavorScore The total flavor stats.
  * @returns The number of stars (0-5).
  */
-export function calcStars(flavorScore: number) {
-   if (flavorScore < 120) return 0;
-   if (flavorScore < 240) return 1;
-   if (flavorScore < 350) return 2;
-   if (flavorScore < 700) return 3;
-   if (flavorScore < 960) return 4;
-   return 5;
-}
-
 export function calcStarsStats(flavorScore: FlavorStats) {
   let flavorSum = 0;
   for (const key in flavorScore) {

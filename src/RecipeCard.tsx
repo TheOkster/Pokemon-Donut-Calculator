@@ -1,6 +1,6 @@
 import type { BerryDict } from "./Settings";
 import type { Combination, FlavorStats } from "./utils";
-import { calcStars, calcStarsStats, flavors } from "./utils";
+import { calcStarsStats, flavors } from "./utils";
 import "./RecipeCard.css";
 const STAR_CALORIES_MULT = [1, 1.1, 1.2, 1.3, 1.4, 1.5];
 
@@ -28,7 +28,7 @@ export function RecipeCard({ combo, berryStats }: { combo: Combination, berrySta
       <div className="card">
          <div className="header">
             <div className="meta">
-               <div className="stars">{calcStars(stats.calories)}<span className="star-symbol" aria-hidden>★</span></div>
+               <div className="stars">{calcStarsStats(stats)}<span className="star-symbol" aria-hidden>★</span></div>
                <div className="calories"><span className="cal-number">{stats.calories}</span><span className="cal-suffix">cal</span></div>
             </div>
             <span className="items">
