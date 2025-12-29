@@ -1,7 +1,8 @@
 import type { BerryDict } from "./Settings";
 import type { Combination, FlavorStats } from "./utils";
-import { calcStars, flavors } from "./utils";
+import { calcStars, calcStarsStats, flavors } from "./utils";
 import "./RecipeCard.css";
+const STAR_CALORIES_MULT = [1, 1.1, 1.2, 1.3, 1.4, 1.5];
 
 export function RecipeCard({ combo, berryStats }: { combo: Combination, berryStats: BerryDict }) {
    function calculateSums(combo: Combination): FlavorStats {
@@ -19,6 +20,8 @@ export function RecipeCard({ combo, berryStats }: { combo: Combination, berrySta
          }
          sums["calories"] += berryStats[berry]["calories"] * quantity;
       });
+      sums["calories"] = Math.floor(sums["calories"] * STAR_CALORIES_MULT[calcStarsStats(sums)]);
+      console.log(calcStarsStats(sums));
       return sums;
    }
    const stats = calculateSums(combo);

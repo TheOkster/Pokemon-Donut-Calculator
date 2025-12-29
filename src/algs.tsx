@@ -1,9 +1,6 @@
 import type { BerryDict, BerryQuantDict } from "./Settings";
-import { calcStars, flavors, type Combination, type Flavor, type FlavorStats } from "./utils";
-
-const STAR_CALORIES_COUNTS: readonly number[] = [0, 120, 240, 350, 700, 960, Infinity];
+import { calcStarsStats, flavors, type Combination, type Flavor, type FlavorStats } from "./utils";
 const MAX_BERRY_FLAVOR = 95;
-const MAX_CALORIES_BERRY = 400;
 
 /**
  * Adds two FlavorStats together
@@ -42,7 +39,7 @@ function isSubset(a: Combination, b: Combination): boolean {
  * @param starRange the range of valid stars (inclusive)
  * @returns true iff the stats meets the thresholds
  */
-function meetsThresholds(stats: FlavorStats, enableRainbow: boolean, flavorValues: { [flavor: string]: [number, number] }, rainbowFlavors: [Flavor, Flavor], starRange: [number, number]): Boolean {
+function meetsThresholds(stats: FlavorStats, enableRainbow: boolean, flavorValues: { [flavor: string]: [number, number] }, rainbowFlavors: [Flavor, Flavor], starRange: [number, number]): boolean {
    if (enableRainbow && (stats[rainbowFlavors[0]] != stats[rainbowFlavors[1]])) {
       return false;
    }
@@ -56,13 +53,12 @@ function meetsThresholds(stats: FlavorStats, enableRainbow: boolean, flavorValue
             return false;
          }
 
-      } else if (key === "calories") {
-         if (calcStars(stats[key]) < starRange[0] || calcStars(stats[key]) > starRange[1]) {
-            return false;
-         }
       } else {
          console.log(`${key} is not in flavorValues`)
       }
+   }
+   if (calcStarsStats(stats) < starRange[0] || calcStarsStats(stats) > starRange[1]) {
+      return false;
    }
    return true;
 }
@@ -75,18 +71,16 @@ function meetsThresholds(stats: FlavorStats, enableRainbow: boolean, flavorValue
  * @param berriesLeft the number of berries that can still be added
  * @returns true if it is determined stats can never reach threshols
  */
-function willNeverMeetThresholds(stats: FlavorStats, flavorValues: { [flavor: string]: [number, number] }, starRange: [number, number], berriesLeft: number): Boolean {
+function willNeverMeetThresholds(stats: FlavorStats, flavorValues: { [flavor: string]: [number, number] }, starRange: [number, number], berriesLeft: number): boolean {
    for (const key in stats) {
       if (key in flavorValues) {
          if (stats[key] < (flavorValues[key][0] - MAX_BERRY_FLAVOR * berriesLeft) || stats[key] > flavorValues[key][1]) {
             return true;
          }
-
-      } else if (key === "calories") {
-         if (stats[key] < (STAR_CALORIES_COUNTS[starRange[0]] - MAX_CALORIES_BERRY * berriesLeft) || stats[key] > STAR_CALORIES_COUNTS[starRange[1] + 1]) {
-            return true;
-         }
       }
+   }
+   if (calcStarsStats(stats) > starRange[1]) {
+      return true;
    }
    return false;
 }
@@ -112,7 +106,7 @@ export function findValidCombinations(berryStats: BerryDict, flavorValues: { [ke
    const results: Result[] = [];
    const baseStats: FlavorStats = Object.fromEntries(flavors.map((flavor) => [flavor, 0]));
    baseStats["calories"] = 0;
-   /* Calculates a utility score for a berry based on how well it meets the flavor and calorie requirements */
+   /* Calculates a utility score for a berry based on how well it meets the flavor requirements */
    function berryUtility(berry: string): number {
       const stats = berryStats[berry];
       let score = 0;
@@ -124,7 +118,6 @@ export function findValidCombinations(berryStats: BerryDict, flavorValues: { [ke
          }
       }
 
-      score += stats.calories / Math.max(1, STAR_CALORIES_COUNTS[starRange[0]]);
       return score;
    }
    /* Tries to insert a combination into the results list, maintaining only non-subset combinations */
@@ -200,8 +193,8 @@ export function findValidCombinations(berryStats: BerryDict, flavorValues: { [ke
       let helps = false;
       for (const flavor of flavors) {
          if (
-            enableRainbow || berriesSelected < 3 || currentStats[flavor] < flavorValues[flavor][0] &&
-            berryStats[berry][flavor] > 0 || currentStats["calories"] < STAR_CALORIES_COUNTS[starRange[0]]
+            enableRainbow || calcStarsStats(currentStats) < starRange[0] || berriesSelected < 3 || currentStats[flavor] < flavorValues[flavor][0] &&
+            berryStats[berry][flavor] > 0
          ) {
             helps = true;
             break;
