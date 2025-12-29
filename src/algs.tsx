@@ -54,7 +54,7 @@ function meetsThresholds(stats: FlavorStats, enableRainbow: boolean, flavorValue
          }
 
       } else {
-         console.log(`${key} is not in flavorValues`)
+         // console.log(`${key} is not in flavorValues`)
       }
    }
    if (calcStarsStats(stats) < starRange[0] || calcStarsStats(stats) > starRange[1]) {

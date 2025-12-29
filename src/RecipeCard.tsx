@@ -21,7 +21,6 @@ export function RecipeCard({ combo, berryStats }: { combo: Combination, berrySta
          sums["calories"] += berryStats[berry]["calories"] * quantity;
       });
       sums["calories"] = Math.floor(sums["calories"] * STAR_CALORIES_MULT[calcStarsStats(sums)]);
-      console.log(calcStarsStats(sums));
       return sums;
    }
    const stats = calculateSums(combo);
